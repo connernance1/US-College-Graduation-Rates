@@ -1,5 +1,17 @@
 body {
-	font: 11px sans-serif;
+  font: 11px sans-serif;
+  background-image: url('https://images.homedepot-static.com/productImages/af0d6229-506e-4b90-bcbe-6efaf49113a7/svn/light-beige-ivy-hill-tile-clay-tile-ext3rd101045-64_1000.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+#names {
+  display: flex;
+}
+
+#names p{
+  padding-right: 10%;
 }
 
 .yeartext{
@@ -12,47 +24,131 @@ body {
     stroke: #FFF;
 }
 
+
+
+#year-chart{
+  background-color: white;
+  border-radius: 0.5%;
+  border: solid black 4px;
+  margin-bottom: 0.5%;
+  overflow: auto;
+}
+
+#averages{
+  background-color: white;
+  border-radius: 0.5%;
+  border: solid black 4px;
+  margin-bottom: 0.5%;
+  padding: 0.7%;
+}
+
+#buttons{
+  display: flex;
+  margin-left: 35%;
+}
+
+#button{
+  padding-right: 10%;
+}
+
+#spend-chart{
+  margin-bottom: 0.5%;
+  padding-left: 1%;
+  background-color: white;
+  border-radius: 0.5%;
+  border: solid black 4px;
+  overflow: auto;
+}
+
 .dots{
     stroke: #A0A0A0;
     stroke-dasharray: 2,2;
 }
 .highlighted{
-    stroke: #404040;;
+    stroke: orange;
     stroke-width:4;
     resize: 4
 }
 
-.sideBar {
-    /* display: inline-block; */
-    /* width: 30%;
-    float:right; */
-    /* width: 500; */
+#fAid {
+  display: inline;
 }
 
-#us-line-chart {
-  background-color:"black";
-  /* position:relative;
-  display:inline-block;
-  vertical-align: top; */
+#stAvg {
+  padding-left: 2%;
 }
 
-#st-line-chart {
-  background-color:"blue";
-  /* position:relative;
-  display:inline-block;
-  vertical-align: bottom; */
+#top-schools{
+  background-color: white;
+  border-radius: 0.5%;
+  border: solid black 4px;
+  margin-top: 1%;
+  margin-right: 65.6%;
+  height: 210px;
+}
+
+#national {
+  margin-left: 1%;
+  text-align: center;
+  float: left;
+}
+
+#state {
+  margin-right: 4%;
+  text-align: right;
+}
+
+#state h3 {
+  text-align: center;
+}
+
+#state p {
+  text-align: right;
 }
 
 .leftColumn {
-  width: 60%;
-  /* height: 100%;
-  float: left; */
+  float:right;
+  width: 64%;
+  background-color: white;
+  border-radius: 0.5%;
+  border: solid black 4px;
+  overflow: auto;
 }
 
 .rightColumn {
-  /* float: right; */
-  width: 40%;
-  /* margin-right: 2%; */
+  width: 34%;
+  background-color: white;
+  border-radius: 0.5%;
+  border: solid black 4px;
+  overflow: auto;
+}
+
+#map {
+  border: solid lightgray;
+  margin-top: 0.5%;
+  margin-left: 9.5%;
+  /* transform: scaleX(1.2); */
+}
+
+#map svg g g line {
+  -webkit-transform: translate(0px, -5px);
+
+}
+
+#legend {
+  margin-top: 1%;
+  margin-left: 50%;
+}
+
+.curYrCircle {
+  fill: purple;
+  opacity: .5;
+  stroke: black;
+}
+
+.avgline {
+  fill: none;
+  stroke-width: 2;
 }
 
 /***************************************/

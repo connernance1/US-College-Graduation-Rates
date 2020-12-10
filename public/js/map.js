@@ -1,14 +1,22 @@
 class Map {
-
     /**
        * Constructor for the Year Chart
-       * TODO: add chart vars
-       * @param data over years
+       * @param line instance of the Line Chart
        */
+    constructor(line, tooltip, list) {
+        this.lineChart = line;
+        this.tooltip = tooltip;
+        this.list = list
+    }
+
+    isAlpha(ch) {
+        return /^[A-Z]$/i.test(ch);
+    }
 
     update(data) {
-        // d3.selectAll('path').remove();
         this.data = data;
+
+        if (data.length <= 1) { return; }
 
         let States = {
             "02": "AK",
@@ -68,7 +76,6 @@ class Map {
         var path = d3.geoPath();
 
         d3.json("https://d3js.org/us-10m.v1.json").then(us => {
-            // console.log(topojson.feature(us, us.objects.states).features)
 
             const legend_width = 300;
             const legend_height = 50;
@@ -81,34 +88,12 @@ class Map {
             let stateList = this.createStateList(data);
 
             //ColorScale be used consistently by all the charts
-            // let colorScale = d3.scaleLinear()
             let colorScale = d3.scaleSequential()
                 .domain([0.8, 0])
                 .interpolator(range);
-            // .range(range)
-
 
             this.createMap(svg, us, States, path, colorScale, stateList);
-
-            // this.createLegend(legend_width, legend_height);
-            // var svg = d3.select("#legend");
-
-            // var quantize = d3.scaleQuantize()
-            //     .domain([0, 0.15])
-            //     .range(d3.range(9).map(function (i) { return "q" + i + "-9"; }));
-
-            // svg.append("g")
-            //     .attr("class", "legendQuant")
-            //     .attr("transform", "translate(20,20)");
-
-            // var colorLegend = d3.legendColor()
-            //     .labelFormat(d3.format(".2f"))
-            //     .useClass(true)
-            //     .scale(quantize);
-
-            // svg.select(".legendQuant")
-            //     .call(colorLegend);
-
+            this.createLegend();
 
             svg.append("path")
                 .attr("class", "state-borders")
@@ -116,65 +101,78 @@ class Map {
         });
     }
 
-    createLegend(legend_width, legend_height) {
-        var key = d3.select("#legend")
+
+    createLegend() {
+        // Remove contents
+        // d3.select('#legend').html("")
+
+
+        let defs = d3.select('#map')
+            // .remove()
             .append("svg")
-            .attr("width", legend_width)
-            .attr("height", legend_height);
+            .attr('id', 'legend-svg')
+            .append("defs");
 
-        var legend = key.append("defs")
-            .append("svg:linearGradient")
-            .attr("id", "gradient")
+        //Append a linearGradient element to the defs and give it a unique id
+        var linearGradient = defs.append("linearGradient")
+            .attr("id", "linear-gradient");
+
+        //Horizontal gradient
+        linearGradient
             .attr("x1", "0%")
-            .attr("y1", "100%")
+            .attr("y1", "0%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+
+        //Vertical gradient
+        linearGradient
+            .attr("x1", "0%")
+            .attr("y1", "0%")
             .attr("x2", "100%")
-            .attr("y2", "100%")
-            .attr("spreadMethod", "pad");
+            .attr("y2", "0%");
 
-        legend.append("stop")
+
+
+        //Set the color for the start (0%)
+        linearGradient.append("stop")
             .attr("offset", "0%")
-            .attr("stop-color", "#f7fcf0")
-            .attr("stop-opacity", 1);
+            .attr("stop-color", "#08306b"); //light blue
 
-        legend.append("stop")
-            .attr("offset", "33%")
-            .attr("stop-color", "#bae4bc")
-            .attr("stop-opacity", 1);
-
-        legend.append("stop")
-            .attr("offset", "66%")
-            .attr("stop-color", "#7bccc4")
-            .attr("stop-opacity", 1);
-
-        legend.append("stop")
+        //Set the color for the end (100%)
+        linearGradient.append("stop")
             .attr("offset", "100%")
-            .attr("stop-color", "#084081")
-            .attr("stop-opacity", 1);
+            .attr("stop-color", "#bedaed"); //dark blue
 
-        key.append("rect")
-            .attr("width", w)
-            .attr("height", h - 30)
-            .style("fill", "url(#gradient)")
-            .attr("transform", "translate(0,10)");
+        //Draw the rectangle and fill with gradient
+        d3.selectAll('#map').append("rect")
+            .attr("width", 202)
+            .attr("height", 20)
+            .attr('transform', 'rotate(-90) translate(-590, 930)')
+            .style("fill", "url(#linear-gradient)");
 
-        var y = d3.scaleLinear()
-            .range([300, 0])
-            .domain([68, 12]);
+        // Create scale
+        let legendScale = d3.scaleLinear()
+            .domain([0, 100])
+            .range([0, 200]);
 
-        var yAxis = d3.axisBottom()
-            .scale(y)
-            .ticks(5);
+        // Add scales to axis
+        let x_axis = d3.axisBottom()
+            .scale(legendScale);
 
-        key.append("g")
-            .attr("class", "y axis")
-            .attr("transform", "translate(0,30)")
-            .call(yAxis)
-            .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 0)
-            .attr("dy", ".71em")
-            .style("text-anchor", "end")
-            .text("axis title");
+        //Append group and insert axis
+        d3.select('#map')
+            .append("svg")
+            .append("g")
+            .attr('transform', 'rotate(-90) translate(-590, 925)')
+            .call(x_axis)
+            // .selectAll('g')
+            .selectAll('text')
+            .attr('transform', 'rotate(90) translate(-18, -12)')
+            .exit()
+            .selectAll('line')
+            .attr('transform', 'translate(0, -5)')
+
+        // transform="rotate(-90) translate(-12,-10)"
     }
 
     createMap(svg, us, States, path, colorScale, stateList) {
@@ -182,40 +180,74 @@ class Map {
             .attr("class", "states")
             .selectAll("path")
             .data(topojson.feature(us, us.objects.states).features)
-            // .data(stateArray)
             .enter().append("path")
             .attr('id', d => States[d.id])
             .attr("d", path)
             .attr('stroke', 'black')
             .attr('fill', function (d) {
-                // console.log(d);
                 if (d.id in States) {
                     let stateCode = States[d.id]
                     let stateInfo = stateList[stateCode]
                     let gradRate = stateInfo[2]
                     return colorScale(gradRate);
                 }
-            }
-            );
+            })
+            .on('click', d => {
+                this.lineChart.update(States[d.id], null, null);
+                this.list.update(this.data, States[d.id])
+            })
+            .on("mouseover", d => {
+                this.tooltip.mouseover(this.data, States[d.id]);
+            })
+            .on("mousemove", () => {
+                this.tooltip.mousemove();
+            })
+            .on("mouseout", () => {
+                this.tooltip.mouseout();
+            })
+            ;
     }
 
     createStateList(data) {
         let stateList = {};
-        // console.log(data[0]);
-        data.forEach(element => {
-            if (!(element.STABBR in stateList)) {
-                stateList[element.STABBR] = [0, 0, 0];
-            }
-            else {
-                // console.log(element.C150_4)
-                if (element.C150_4 != 'NULL' && element.C150_4 != null) {
-
-                    stateList[element.STABBR][0] += parseFloat(element.C150_4);
-                    stateList[element.STABBR][1] += 1;
+        let datasetList = { 'C150_4': 'C150_4', 'PELL_COMP_ORIG_YR4_RT': 'PELL_COMP_ORIG_YR4_RT', 'LOAN_COMP_ORIG_YR4_RT': 'LOAN_COMP_ORIG_YR4_RT' }
+        let isRadioButton = false
+        if (data.length > 10) {
+            data.forEach(element => {
+                if (!(element.STABBR in stateList)) {
+                    stateList[element.STABBR] = [0, 0, 0];
                 }
+                else {
+                    // add eval statement based on selected radio parameter.
+                    let buttons = document.getElementsByClassName('grad_rate');
+                    let dataset = 'element.';
+                    for (var i = 0; i < buttons.length; i++) {
+                        if (buttons[i].checked == true && (buttons[i].value == 'PELL_COMP_ORIG_YR4_RT' || buttons[i].value == 'LOAN_COMP_ORIG_YR4_RT')) {
+                            // appends column name to dataset. 
+                            dataset = dataset + buttons[i].value;
+                            isRadioButton = true
+                        }
+                    }
+                    if (!isRadioButton) { dataset = 'element.C150_4' }
+                    if (isRadioButton) {
 
+                        if (!this.isAlpha(eval(dataset)) && eval(dataset) != 'NULL' && eval(dataset) != 'PrivacySuppressed') {
+
+                            stateList[element.STABBR][0] += parseFloat(eval(dataset));
+                            stateList[element.STABBR][1] += 1;
+                        }
+                    }
+                    else {
+                        // if (element.C150_4 != 'NULL' && element.C150_4 != 'PrivacySuppressed') {
+                        if (!this.isAlpha(element.C150_4) && element.C150_4 != 'NULL') {
+                            stateList[element.STABBR][0] += parseFloat(element.C150_4);
+                            stateList[element.STABBR][1] += 1;
+                        }
+                    }
+                }
             }
-        });
+            );
+        }
 
         for (const [key, value] of Object.entries(stateList)) {
             value[2] = value[0] / value[1];
@@ -223,10 +255,6 @@ class Map {
                 value[2] = 0;
             }
         }
-
-        // console.log(stateList['UT'][2]);
         return stateList;
     }
 }
-
-

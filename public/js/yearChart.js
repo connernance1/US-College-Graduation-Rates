@@ -3,25 +3,24 @@ class YearChart {
 
   /**
    * Constructor for the Year Chart
-   * TODO: add chart vars
    * @param map
+   * @param line
    * @param spendChart
    * @param electionInfo instance of ElectionInfo
    * @param yearlyDropouts over years
    */
-  constructor (map,spendChart, yearlyDropouts,usline,stline) {
-
-    //Todo: Create YearChart instance
+  constructor(map, line, spendChart, yearlyDropouts, demographic, list) {
+    //Create Chart instances
     this.spendChart = spendChart;
     this.map = map;
-
+    this.line = line;
     // the data
     this.yearlyDropouts = yearlyDropouts;
-    // US line chart instance
-    this.usLineChart = usline;
-    // State line chart instance
-    this.stLineChart = stline;
-    
+    // Demographic filter instance
+    this.demographic = demographic
+    // Top 5 state and country list instance
+    this.list = list
+
     // Initializes the svg elements required for this chart
     this.margin = { top: 10, right: 20, bottom: 30, left: 50 };
     let divyearChart = d3.select("#year-chart").classed("fullView", true);
@@ -38,6 +37,20 @@ class YearChart {
 
     this.selected = null;
   }
+
+  // Future work: add keybinding
+  //   move(x) {
+  //     return function(event) {
+  //         event.preventDefault();
+  //         momentum = [momentum[0] + x, momentum[1] + y];
+  //     };
+  //   }
+
+  // this.svg.call(d3.keybinding()
+  //     .on('←', move(-1))
+  //     .on('↑', move(1))
+  //     .on('→', move(1))
+  //     .on('↓', move(-1)));
 
   /**
    * Creates a chart with circles representing each year, populates text content and other required elements for the Year Chart
@@ -76,7 +89,7 @@ class YearChart {
       .attr('cy', r + 4)
       .attr('r', r)
       .attr('fill', d => {
-        return this.colorScale(+d.Completion)
+        return this.colorScale(+d.C150_4)
       })
       .classed('yearChart', true)
       .attr('id', d => `y${d.YEAR}`)
@@ -105,10 +118,8 @@ class YearChart {
       .text(d => d.YEAR)
       .classed('yeartext', true)
       ;
-
-
   }
-
+  // updates the yearchart and subcharts with selected year
   selectYear(selected, d) {
     if (this.selected) {
       this.selected.classed('highlighted', false);
@@ -117,20 +128,11 @@ class YearChart {
     this.selected.classed('highlighted', true);
 
     d3.csv(`data/${d.YEAR}.csv`).then(year => {
-      this.spendChart.update(map, year); 
-      this.map.update(year); //TODO send chart instances
-
-      if (d.YEAR == 2018){
-        d3.csv(`data/${parseInt(d.YEAR)-1}.csv`).then(other =>{
-          this.stLineChart.update([year,other],[parseInt(d.YEAR),parseInt(d.YEAR)-1]);
-        })
-      }
-      else {
-        d3.csv(`data/${parseInt(d.YEAR)+1}.csv`).then(other =>{
-          this.stLineChart.update([year,other],[parseInt(d.YEAR),parseInt(d.YEAR)+1]);
-        })
-      }
+      this.line.update(null,null,null,d.YEAR)
+      this.spendChart.update(this.map,year,this.line);
+      this.demographic.update(this.map,year,this.line,this.list)
+      this.map.update(year); // send chart instances
+      this.list.update(year)
     });
   }
-
 }
